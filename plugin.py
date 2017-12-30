@@ -6,9 +6,9 @@
 #
 ################################################################################
 """
-<plugin key="xfr_speedtest" name="Speedtest" author="Xorfor" version="1.2.0" wikilink="https://github.com/Xorfor/Domoticz/tree/master/plugins/speedtest">
+<plugin key="xfr_speedtest" name="Speedtest" author="Xorfor" version="1.2.0" wikilink="https://github.com/Xorfor/Domoticz-Speedtest-Plugin">
     <params>
-        <param field="Mode1" label="Polling time (minutes)" width="100px" required="true" default="15"/>
+        <param field="Mode1" label="Polling time (minutes)" width="100px" required="true" default="60"/>
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
