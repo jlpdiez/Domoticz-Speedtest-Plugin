@@ -10,4 +10,4 @@ sudo apt-get install speedtest-cli -y
 ## Remarks
 - When running on Raspberry Pi, just note that the maximum speed is limited by its 100 Mbit/s LAN adapter.
 - Frequent updates should be avoided.
-- While running, network usage is fully utilized. This may have a negative affect on other devices in use the network such as gaming consoles or streaming boxes.
+- While running, network usage is fully utilized. This may have a negative effect on other devices on the network such as gaming consoles or streaming boxes.
