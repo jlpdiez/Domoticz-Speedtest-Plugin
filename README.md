@@ -1,4 +1,4 @@
-# Domoticz-Speedtest-Plugin
+# Speedtest
 This plugin will check the speed of the Domoticz network.
 ## Prerequisite
 This plugin uses `speedtest-cli` to check the speed in the Domoticz network. To install it, eg. on Raspberry Pi:
