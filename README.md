@@ -6,7 +6,7 @@ This plugin uses `speedtest-cli` to check the speed in the Domoticz network. To 
 sudo apt-get install speedtest-cli -y
 ```
 ## Parameters
-- **Interval in minutes**: Interval to check the network speed. Default **`15`** minutes.
+- **Interval in minutes**: Interval to check the network speed. Default **`60`** minutes.
 ## Remarks
 - When running on Raspberry Pi, just note that the maximum speed is limited by its 100 Mbit/s LAN adapter.
 - Frequent updates should be avoided.
