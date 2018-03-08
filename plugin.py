@@ -6,7 +6,7 @@
 #
 ################################################################################
 """
-<plugin key="xfr_speedtest" name="Speedtest" author="Xorfor" version="1.2.0" wikilink="https://github.com/Xorfor/Domoticz-Speedtest-Plugin">
+<plugin key="xfr_speedtest" name="Speedtest" author="Xorfor" version="1.3.0" wikilink="https://github.com/Xorfor/Domoticz-Speedtest-Plugin">
     <params>
         <param field="Mode1" label="Polling time (minutes)" width="100px" required="true" default="60"/>
         <param field="Mode6" label="Debug" width="75px">
@@ -25,24 +25,27 @@ import os
 
 class BasePlugin:
 
-    __HEARTBEATS2MIN = 6
+    _HEARTBEATS2MIN = 6
 
     # Command
-    __COMMAND = "speedtest-cli"
-    __OPTIONS = "--simple"
+    _COMMAND = "speedtest-cli"
+    _OPTIONS = "--simple"
+    #
     # Device units
-    __UNIT_PING = 1
-    __UNIT_DOWNLOAD = 2
-    __UNIT_UPLOAD = 3
+    _UNITS = {
+        "PING":         1,
+        "DOWNLOAD":     2,
+        "UPLOAD":       3,
+    }
+    #
     # Search strings
-    __PING = "Ping"
-    __DOWNLOAD = "Download"
-    __UPLOAD = "Upload"
+    _PING = "Ping"
+    _DOWNLOAD = "Download"
+    _UPLOAD = "Upload"
 
     def __init__(self):
-        self.__config_ok = False
-        self.__runAgain = 0
-        self.__polling = 0
+        self._runAgain = 0
+        self._polling = 0
 
     def onStart(self):
         Domoticz.Debug("onStart called")
@@ -51,19 +54,9 @@ class BasePlugin:
             Domoticz.Debugging(1)
 
         # Check parameter for heartbeat. Default is 1. Check every 1 minute for the presence of the defined mac addresses
-        self.__polling = int(Parameters["Mode1"])
-        if self.__polling < 1:
-            self.__polling = 1
-        #
-        # Check for the existence of the command
-        ret = os.popen("dpkg -l | grep " + self.__COMMAND).read()
-        pos = ret.find(self.__COMMAND)
-        if pos >= 0:
-            self.__config_ok = True
-        else:
-            self.__config_ok = False
-            Domoticz.Error(self.__COMMAND + " not found")
-            return
+        self._polling = int(Parameters["Mode1"])
+        if self._polling < 1:
+            self._polling = 1
         #
         # Images
         # Check if images are in database
@@ -73,9 +66,9 @@ class BasePlugin:
         Domoticz.Debug("Image created. ID: "+str(image))
         # Create devices
         if (len(Devices) == 0):
-            Domoticz.Device(Unit=self.__UNIT_PING, Name=self.__PING, TypeName="Custom", Options={"Custom": "1;ms"}, Image=image, Used=1).Create()
-            Domoticz.Device(Unit=self.__UNIT_DOWNLOAD, Name=self.__DOWNLOAD, TypeName="Custom", Options={"Custom": "1;Mb/s"}, Image=image, Used=1).Create()
-            Domoticz.Device(Unit=self.__UNIT_UPLOAD, Name=self.__UPLOAD, TypeName="Custom", Options={"Custom": "1;Mb/s"}, Image=image, Used=1).Create()
+            Domoticz.Device(Unit=self._UNITS["PING"], Name=self._PING, TypeName="Custom", Options={"Custom": "1;ms"}, Image=image, Used=1).Create()
+            Domoticz.Device(Unit=self._UNITS["DOWNLOAD"], Name=self._DOWNLOAD, TypeName="Custom", Options={"Custom": "1;Mb/s"}, Image=image, Used=1).Create()
+            Domoticz.Device(Unit=self._UNITS["UPLOAD"], Name=self._UPLOAD, TypeName="Custom", Options={"Custom": "1;Mb/s"}, Image=image, Used=1).Create()
         # Log config
         DumpConfigToLog()
 
@@ -101,34 +94,31 @@ class BasePlugin:
 
     def onHeartbeat(self):
         Domoticz.Debug("onHeartbeat called")
-        if not self.__config_ok:
-            return
-
         cmd = {}
         value = {}
-        units = {}
+        unit = {}
         #
-        self.__runAgain -= 1
-        if self.__runAgain <= 0:
-            self.__runAgain = self.__polling * self.__HEARTBEATS2MIN
+        self._runAgain -= 1
+        if self._runAgain <= 0:
+            self._runAgain = self._polling * self._HEARTBEATS2MIN
             # Run command
-            retList = subprocess.Popen([self.__COMMAND, self.__OPTIONS], stdout=subprocess.PIPE).communicate()[0].decode('utf-8').strip().splitlines()
+            retList = subprocess.Popen([self._COMMAND, self._OPTIONS], stdout=subprocess.PIPE).communicate()[0].decode('utf-8').strip().splitlines()
             num = 0
             for ret in retList:
-                cmd[num], value[num], units[num] = ret.split(" ")
+                cmd[num], value[num], unit[num] = ret.split(" ")
                 num += 1
             #
             for num in range(len(cmd)):
                 Domoticz.Debug(
-                    "num: " + str(num) + " - cmd: " + cmd[num] + " - value: " + value[num] + " - units: " + units[num])
-                if cmd[num].find(self.__PING) >= 0:
-                    UpdateDevice(self.__UNIT_PING, int(float(value[num])), str(round(float(value[num]), 2)) + " " + units[num])
-                if cmd[num].find(self.__DOWNLOAD) >= 0:
-                    UpdateDevice(self.__UNIT_DOWNLOAD, int(float(value[num])), value[num] + " " + units[num])
-                if cmd[num].find(self.__UPLOAD) >= 0:
-                    UpdateDevice(self.__UNIT_UPLOAD, int(float(value[num])), value[num] + " " + units[num])
+                    "num: " + str(num) + " - cmd: " + cmd[num] + " - value: " + value[num] + " - units: " + unit[num])
+                if cmd[num].find(self._PING) >= 0:
+                    UpdateDevice(self._UNITS["PING"], int(float(value[num])), str(round(float(value[num]), 2)) + " " + unit[num])
+                if cmd[num].find(self._DOWNLOAD) >= 0:
+                    UpdateDevice(self._UNITS["DOWNLOAD"], int(float(value[num])), value[num] + " " + unit[num])
+                if cmd[num].find(self._UPLOAD) >= 0:
+                    UpdateDevice(self._UNITS["UPLOAD"], int(float(value[num])), value[num] + " " + unit[num])
         else:
-            Domoticz.Debug("onHeartbeat called, run again in " + str(self.__runAgain) + " heartbeats.")
+            Domoticz.Debug("onHeartbeat called, run again in " + str(self._runAgain) + " heartbeats.")
 
 global _plugin
 _plugin = BasePlugin()
