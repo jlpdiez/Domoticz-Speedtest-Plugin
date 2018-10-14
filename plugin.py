@@ -29,7 +29,7 @@ class BasePlugin:
 
     # Command
     _COMMAND = "speedtest-cli"
-    _OPTIONS = "--simple"
+    #_OPTIONS = "--simple"
     #
     # Device units
     _UNITS = {
@@ -67,8 +67,8 @@ class BasePlugin:
         # Create devices
         if (len(Devices) == 0):
             Domoticz.Device(Unit=self._UNITS["PING"], Name=self._PING, TypeName="Custom", Options={"Custom": "1;ms"}, Image=image, Used=1).Create()
-            Domoticz.Device(Unit=self._UNITS["DOWNLOAD"], Name=self._DOWNLOAD, TypeName="Custom", Options={"Custom": "1;Mb/s"}, Image=image, Used=1).Create()
-            Domoticz.Device(Unit=self._UNITS["UPLOAD"], Name=self._UPLOAD, TypeName="Custom", Options={"Custom": "1;Mb/s"}, Image=image, Used=1).Create()
+            Domoticz.Device(Unit=self._UNITS["DOWNLOAD"], Name=self._DOWNLOAD, TypeName="Custom", Options={"Custom": "1;MB/s"}, Image=image, Used=1).Create()
+            Domoticz.Device(Unit=self._UNITS["UPLOAD"], Name=self._UPLOAD, TypeName="Custom", Options={"Custom": "1;MB/s"}, Image=image, Used=1).Create()
         # Log config
         DumpConfigToLog()
 
@@ -102,10 +102,11 @@ class BasePlugin:
         if self._runAgain <= 0:
             self._runAgain = self._polling * self._HEARTBEATS2MIN
             # Run command
-            retList = subprocess.Popen([self._COMMAND, self._OPTIONS], stdout=subprocess.PIPE).communicate()[0].decode('utf-8').strip().splitlines()
+            retList = subprocess.Popen([self._COMMAND, "--simple", "--bytes"], stdout=subprocess.PIPE).communicate()[0].decode('utf-8').strip().splitlines()
             num = 0
             for ret in retList:
                 cmd[num], value[num], unit[num] = ret.split(" ")
+                Domoticz.Debug("Received: " + cmd[num] + ":" + value[num] + unit[num])
                 num += 1
             #
             for num in range(len(cmd)):
